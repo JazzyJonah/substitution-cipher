@@ -48,9 +48,9 @@ function isConsistent(mapping, cipherChar, plainChar) {
     return true;
 }
 
-// Tokenize text into words and keep track of punctuation separately
+// Tokenize text into words, punctuation, and spaces
 function tokenize(text) {
-    const regex = /([A-Z]+|[^\w\s])/g;
+    const regex = /([A-Z]+|[^\w\s]|\s)/g; // Tokenizes words, punctuation, and spaces separately
     return text.match(regex);
 }
 
@@ -73,7 +73,7 @@ function iterativeSolve(cipherWords, wordPatterns) {
         }
 
         const cipherWord = cipherWords[index];
-        // Skip punctuation (it's not mapped)
+        // Skip punctuation and spaces (they are not mapped)
         if (!cipherWord.match(/[A-Z]/)) {
             stack.push({ index: index + 1, mappings });
             continue;
@@ -108,7 +108,7 @@ function iterativeSolve(cipherWords, wordPatterns) {
 function decrypt() {
     const ciphertext = document.getElementById("ciphertext").value.trim().toUpperCase();
 
-    // Tokenize text and retain punctuation and spaces
+    // Tokenize text and retain punctuation, spaces, and words
     const cipherTokens = tokenize(ciphertext);
 
     // Build word patterns from the loaded dictionary
@@ -125,7 +125,7 @@ function decrypt() {
         solutions.forEach((solution, idx) => {
             let decryptedText = cipherTokens
                 .map(char => (char.match(/[A-Z]/) ? (solution[char] || char) : char))
-                .join('');
+                .join('');  // Keep the spaces and punctuation in place
             resultContainer.innerHTML += `<p>Solution ${idx + 1}: ${decryptedText}</p>`;
         });
     } else {
