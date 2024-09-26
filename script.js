@@ -48,12 +48,6 @@ function isConsistent(mapping, cipherChar, plainChar) {
     return true;
 }
 
-// Tokenize text into words, punctuation, and spaces
-function tokenize(text) {
-    const regex = /([A-Z]+|[^\w\s]|\s)/g; // Tokenizes words, punctuation, and spaces separately
-    return text.match(regex);
-}
-
 // Iterative backtracking solution
 function iterativeSolve(cipherWords, wordPatterns) {
     const stack = [];
@@ -73,12 +67,6 @@ function iterativeSolve(cipherWords, wordPatterns) {
         }
 
         const cipherWord = cipherWords[index];
-        // Skip punctuation and spaces (they are not mapped)
-        if (!cipherWord.match(/[A-Z]/)) {
-            stack.push({ index: index + 1, mappings });
-            continue;
-        }
-
         const pattern = getWordPattern(cipherWord);
         const possibleWords = wordPatterns[pattern] || [];
 
@@ -107,15 +95,13 @@ function iterativeSolve(cipherWords, wordPatterns) {
 // Decrypt function that gets called when the button is clicked
 function decrypt() {
     const ciphertext = document.getElementById("ciphertext").value.trim().toUpperCase();
-
-    // Tokenize text and retain punctuation, spaces, and words
-    const cipherTokens = tokenize(ciphertext);
+    const cipherWords = ciphertext.split(/\s+/);
 
     // Build word patterns from the loaded dictionary
     const wordPatterns = buildWordPatterns(dictionary);
 
     // Get all possible solutions
-    const solutions = iterativeSolve(cipherTokens, wordPatterns);
+    const solutions = iterativeSolve(cipherWords, wordPatterns);
 
     // Display the results
     const resultContainer = document.getElementById("results");
@@ -123,9 +109,10 @@ function decrypt() {
 
     if (solutions.length > 0) {
         solutions.forEach((solution, idx) => {
-            let decryptedText = cipherTokens
-                .map(char => (char.match(/[A-Z]/) ? (solution[char] || char) : char))
-                .join('');  // Keep the spaces and punctuation in place
+            let decryptedText = ciphertext
+                .split('')
+                .map(char => (char in solution ? solution[char] : char))
+                .join('');
             resultContainer.innerHTML += `<p>Solution ${idx + 1}: ${decryptedText}</p>`;
         });
     } else {
