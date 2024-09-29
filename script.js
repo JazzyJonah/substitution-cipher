@@ -140,8 +140,8 @@ function decrypt() {
             solutionList.push({ decryptedText, score });
         });
         
-        // Sort solutions by score (higher score first)
-        solutionList.sort((a, b) => b.score - a.score);
+        // Sort solutions by score (lower score first)
+        solutionList.sort((a, b) => a.score - b.score);
 
         // Display the sorted solutions
         solutionList.forEach((solution, idx) => {
