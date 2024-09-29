@@ -1,12 +1,32 @@
 // To store the dictionary loaded from the file
 let dictionary = [];
 
-// Fetch the dictionary file (words.txt) and load it
+// Fetch the dictionary file (words.txt) and load it with frequencies
+let wordFrequencies = {};
 fetch('words.txt')
     .then(response => response.text())
     .then(text => {
         dictionary = text.split('\n').map(word => word.trim().toUpperCase()).filter(Boolean);
+        dictionary.forEach((word, index) => {
+            wordFrequencies[word] = index + 1; // The earlier the word, the higher the frequency score
+        });
     });
+
+// Calculate the average frequency score of a solution
+function calculateSolutionScore(decryptedText) {
+    const words = decryptedText.split(/\s+/); // Split decrypted text into words
+    let totalScore = 0;
+    let wordCount = 0;
+
+    words.forEach(word => {
+        if (wordFrequencies[word]) {
+            totalScore += wordFrequencies[word]; // Sum the frequencies
+            wordCount++;
+        }
+    });
+
+    return wordCount > 0 ? totalScore / wordCount : 0; // Return the average score
+}
 
 // Function to generate word patterns
 function getWordPattern(word) {
@@ -108,12 +128,24 @@ function decrypt() {
     resultContainer.innerHTML = '';
 
     if (solutions.length > 0) {
+        let solutionList = [];
+
+        // For each solution, calculate the decrypted text and score
         solutions.forEach((solution, idx) => {
             let decryptedText = ciphertext
                 .split('')
                 .map(char => (char in solution ? solution[char] : char))
                 .join('');
-            resultContainer.innerHTML += `<p>Solution ${idx + 1}: ${decryptedText}</p>`;
+            let score = calculateSolutionScore(decryptedText); // Calculate the score for each solution
+            solutionList.push({ decryptedText, score });
+        });
+        
+        // Sort solutions by score (higher score first)
+        solutionList.sort((a, b) => b.score - a.score);
+
+        // Display the sorted solutions
+        solutionList.forEach((solution, idx) => {
+            resultContainer.innerHTML += `<p>Solution ${idx + 1} (Score: ${solution.score.toFixed(2)}): ${solution.decryptedText}</p>`;
         });
     } else {
         resultContainer.innerHTML = "<p>No solutions found.</p>";
